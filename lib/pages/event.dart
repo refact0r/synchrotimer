@@ -5,7 +5,7 @@ class EventPage extends StatefulWidget {
   const EventPage({Key? key}) : super(key: key);
 
   @override
-  _EventPageState createState() => _EventPageState();
+  State<EventPage> createState() => _EventPageState();
 }
 
 class _EventPageState extends State<EventPage> {
@@ -35,15 +35,15 @@ class _EventPageState extends State<EventPage> {
     [210, 0, 180, 180, 180, 0, 240, 0],
     [180, 0, 0, 0, 0, 0, 0, 0]
   ];
-  bool firstPage = true;
+  bool groupPage = true;
   int groupIndex = 0;
   int eventIndex = 0;
 
   void select(int index) {
     setState(() {
-      if (firstPage) {
+      if (groupPage) {
         groupIndex = index;
-        firstPage = false;
+        groupPage = false;
       } else {
         eventIndex = index;
         Navigator.pop(context, [times[eventIndex][groupIndex], '${groupNames[groupIndex]} ${eventNames[eventIndex]}']);
@@ -59,15 +59,15 @@ class _EventPageState extends State<EventPage> {
           onPressed: () {
             HapticFeedback.selectionClick();
             setState(() {
-              if (!firstPage) {
-                firstPage = true;
+              if (!groupPage) {
+                groupPage = true;
               } else {
                 Navigator.pop(context, null);
               }
             });
           },
         ),
-        title: Text(firstPage ? 'Select Group' : 'Select Event'),
+        title: Text(groupPage ? 'Select Group' : 'Select Event'),
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(32, 8, 32, 32),
@@ -77,23 +77,21 @@ class _EventPageState extends State<EventPage> {
   }
 
   Widget getOptions() {
-    List<String> currentList = firstPage ? groupNames : eventNames;
+    List<String> currentList = groupPage ? groupNames : eventNames;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (!firstPage)
+        if (!groupPage)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Text(
               groupNames[groupIndex],
-              style: TextStyle(
-                fontSize: 20,
-              ),
+              style: const TextStyle(fontSize: 20),
             ),
           ),
         for (int i = 0; i < currentList.length; i++)
-          if (firstPage || (!firstPage && times[i][groupIndex] != 0))
+          if (groupPage || (!groupPage && times[i][groupIndex] != 0))
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: ElevatedButton(

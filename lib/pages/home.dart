@@ -7,6 +7,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:synchrotimer/pages/event.dart';
 
+import 'history.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -17,29 +19,29 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<double> fontSizes = [68, 48, 48];
   List<String> timeStrings = ["00:00.00", "00:00.00", "00:00.00"];
-  List<Duration> finalTimeValues = [Duration.zero, Duration.zero, Duration.zero];
-  Duration elapsed = Duration.zero;
-  int stopwatchState = 0;
-  bool deckLimitExceeded = false;
-  bool routineLimitExceeded = false;
+  List<Duration> finalTimes = [Duration.zero, Duration.zero, Duration.zero];
+  // Duration elapsed = Duration.zero;
+  int state = 0;
+  bool deckExceeded = false;
+  bool routineExceeded = false;
   final stopwatch = Stopwatch();
   late final Ticker ticker = Ticker((tickerElapsed) {
     setState(() {
-      elapsed = tickerElapsed;
-      if (stopwatchState == 0) {
-      } else if (stopwatchState == 1) {
-        timeStrings[0] = getTimeString(stopwatch.elapsed);
-      } else if (stopwatchState == 2) {
-        timeStrings[1] = getTimeString(stopwatch.elapsed - finalTimeValues[0]);
-        timeStrings[2] = getTimeString(stopwatch.elapsed - finalTimeValues[0]);
-      } else if (stopwatchState == 3) {
-        timeStrings[2] = getTimeString(stopwatch.elapsed - finalTimeValues[0]);
+      // elapsed = tickerElapsed;
+      if (state == 0) {
+      } else if (state == 1) {
+        timeStrings[0] = timeString(stopwatch.elapsed);
+      } else if (state == 2) {
+        timeStrings[1] = timeString(stopwatch.elapsed - finalTimes[0]);
+        timeStrings[2] = timeString(stopwatch.elapsed - finalTimes[0]);
+      } else if (state == 3) {
+        timeStrings[2] = timeString(stopwatch.elapsed - finalTimes[0]);
       }
-      if (stopwatchState == 2 && (stopwatch.elapsed - finalTimeValues[0]) > const Duration(seconds: 10)) {
-        deckLimitExceeded = true;
+      if (state == 2 && (stopwatch.elapsed - finalTimes[0]) > const Duration(seconds: 10)) {
+        deckExceeded = true;
       }
-      if ((stopwatch.elapsed - finalTimeValues[0]) > Duration(seconds: timeLimit + 5)) {
-        routineLimitExceeded = true;
+      if ((stopwatch.elapsed - finalTimes[0]) > Duration(seconds: timeLimit + 5)) {
+        routineExceeded = true;
       }
     });
   });
@@ -59,76 +61,70 @@ class _HomePageState extends State<HomePage> {
 
   String getButtonLabel() {
     final List<String> buttonLabels = ["Start Walk Time", "Start Deck Time", "Start Routine Time", "Stop"];
-    return buttonLabels[stopwatchState];
+    return buttonLabels[state];
   }
 
-  Color getButtonColor(ColorScheme colorScheme) {
+  Color getButtonColor(ColorScheme colors) {
     final List<Color> buttonColors = [
-      colorScheme.primaryContainer,
-      colorScheme.secondaryContainer,
-      colorScheme.tertiaryContainer,
-      colorScheme.errorContainer
+      colors.primaryContainer,
+      colors.secondaryContainer,
+      colors.tertiaryContainer,
+      colors.errorContainer
     ];
-    return buttonColors[stopwatchState];
+    return buttonColors[state];
   }
 
-  Color getButtonTextColor(ColorScheme colorScheme) {
-    final List<Color> buttonTextColors = [
-      colorScheme.primary,
-      colorScheme.secondary,
-      colorScheme.tertiary,
-      colorScheme.error
-    ];
-    return buttonTextColors[stopwatchState];
+  Color getButtonTextColor(ColorScheme colors) {
+    final List<Color> buttonTextColors = [colors.primary, colors.secondary, colors.tertiary, colors.error];
+    return buttonTextColors[state];
   }
 
-  String getTimeString(Duration duration) {
-    String minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
-    String seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
-    String milliseconds = (duration.inMilliseconds % 1000 / 10).floor().toString().padLeft(2, '0');
-    return "$minutes:$seconds.$milliseconds";
+  String timeString(Duration duration) {
+    String min = (duration.inMinutes % 60).toString().padLeft(2, '0');
+    String sec = (duration.inSeconds % 60).toString().padLeft(2, '0');
+    String msec = (duration.inMilliseconds % 1000 / 10).floor().toString().padLeft(2, '0');
+    return "$min:$sec.$msec";
   }
 
   String getTimeLimitString(int duration) {
-    String minutes = (duration / 60 % 60).floor().toString();
-    String seconds = (duration % 60).toString().padLeft(2, '0');
-    return "$minutes:$seconds";
+    String min = (duration / 60 % 60).floor().toString();
+    String sec = (duration % 60).toString().padLeft(2, '0');
+    return "$min:$sec";
   }
 
   void changeStopwatchState() {
     setState(() {
-      if (stopwatchState == 0) {
+      if (state == 0) {
         stopwatch.start();
         timeStrings = ["00:00.00", "00:00.00", "00:00.00"];
-        stopwatchState = 1;
-        deckLimitExceeded = false;
-        routineLimitExceeded = false;
+        state = 1;
+        deckExceeded = false;
+        routineExceeded = false;
         ticker.start();
         fontSizes = [68, 48, 48];
-      } else if (stopwatchState == 1) {
-        finalTimeValues[0] = stopwatch.elapsed;
-        stopwatchState = 2;
-        timeStrings[0] = getTimeString(finalTimeValues[0]);
+      } else if (state == 1) {
+        finalTimes[0] = stopwatch.elapsed;
+        state = 2;
+        timeStrings[0] = timeString(finalTimes[0]);
         fontSizes = [48, 68, 48];
-      } else if (stopwatchState == 2) {
-        finalTimeValues[1] = stopwatch.elapsed - finalTimeValues[0];
-        stopwatchState = 3;
-        timeStrings[1] = getTimeString(finalTimeValues[1]);
-        if (finalTimeValues[1] > const Duration(seconds: 10)) {
-          deckLimitExceeded = true;
+      } else if (state == 2) {
+        finalTimes[1] = stopwatch.elapsed - finalTimes[0];
+        state = 3;
+        timeStrings[1] = timeString(finalTimes[1]);
+        if (finalTimes[1] > const Duration(seconds: 10)) {
+          deckExceeded = true;
         }
         fontSizes = [48, 48, 68];
-      } else if (stopwatchState == 3) {
+      } else if (state == 3) {
         stopwatch.stop();
-        finalTimeValues[2] = stopwatch.elapsed - finalTimeValues[0];
+        finalTimes[2] = stopwatch.elapsed - finalTimes[0];
         ticker.stop();
-        timeStrings[2] = getTimeString(finalTimeValues[2]);
-        if (finalTimeValues[2] > Duration(seconds: timeLimit + 5) ||
-            finalTimeValues[2] < Duration(seconds: timeLimit - 5)) {
-          routineLimitExceeded = true;
+        timeStrings[2] = timeString(finalTimes[2]);
+        if (finalTimes[2] > Duration(seconds: timeLimit + 5) || finalTimes[2] < Duration(seconds: timeLimit - 5)) {
+          routineExceeded = true;
         }
         stopwatch.reset();
-        stopwatchState = 0;
+        state = 0;
       }
     });
     HapticFeedback.mediumImpact();
@@ -145,6 +141,25 @@ class _HomePageState extends State<HomePage> {
             style: Theme.of(context).textTheme.headlineMedium,
           ),
         ),
+        actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(right: 24),
+            child: IconButton(
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HistoryPage()),
+                );
+              },
+              style: IconButton.styleFrom(
+                padding: const EdgeInsets.all(8),
+              ),
+              icon: const Icon(Icons.history),
+              iconSize: 32,
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
@@ -180,9 +195,7 @@ class _HomePageState extends State<HomePage> {
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                    color: deckLimitExceeded
-                        ? Theme.of(context).colorScheme.error
-                        : Theme.of(context).colorScheme.secondary,
+                    color: deckExceeded ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.secondary,
                     fontSize: fontSizes[1],
                     fontFeatures: [const FontFeature.tabularFigures()],
                     fontVariations: const [FontVariation('wght', 300)],
@@ -199,9 +212,8 @@ class _HomePageState extends State<HomePage> {
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                    color: routineLimitExceeded
-                        ? Theme.of(context).colorScheme.error
-                        : Theme.of(context).colorScheme.tertiary,
+                    color:
+                        routineExceeded ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.tertiary,
                     fontSize: fontSizes[2],
                     fontFeatures: const [FontFeature.tabularFigures()],
                     fontVariations: const [FontVariation('wght', 300)],
