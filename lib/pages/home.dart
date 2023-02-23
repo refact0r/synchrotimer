@@ -4,6 +4,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+import 'package:synchrotimer/pages/event.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,6 +20,8 @@ class _HomePageState extends State<HomePage> {
   List<Duration> finalTimeValues = [Duration.zero, Duration.zero, Duration.zero];
   Duration elapsed = Duration.zero;
   int stopwatchState = 0;
+  bool deckLimitExceeded = false;
+  bool routineLimitExceeded = false;
   final stopwatch = Stopwatch();
   late final Ticker ticker = Ticker((tickerElapsed) {
     setState(() {
@@ -31,8 +35,16 @@ class _HomePageState extends State<HomePage> {
       } else if (stopwatchState == 3) {
         timeStrings[2] = getTimeString(stopwatch.elapsed - finalTimeValues[0]);
       }
+      if (stopwatchState == 2 && (stopwatch.elapsed - finalTimeValues[0]) > const Duration(seconds: 10)) {
+        deckLimitExceeded = true;
+      }
+      if ((stopwatch.elapsed - finalTimeValues[0]) > Duration(seconds: timeLimit + 5)) {
+        routineLimitExceeded = true;
+      }
     });
   });
+  String eventString = "12 & Under Solo";
+  int timeLimit = 120;
 
   @override
   void initState() {
@@ -45,6 +57,31 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  String getButtonLabel() {
+    final List<String> buttonLabels = ["Start Walk Time", "Start Deck Time", "Start Routine Time", "Stop"];
+    return buttonLabels[stopwatchState];
+  }
+
+  Color getButtonColor(ColorScheme colorScheme) {
+    final List<Color> buttonColors = [
+      colorScheme.primaryContainer,
+      colorScheme.secondaryContainer,
+      colorScheme.tertiaryContainer,
+      colorScheme.errorContainer
+    ];
+    return buttonColors[stopwatchState];
+  }
+
+  Color getButtonTextColor(ColorScheme colorScheme) {
+    final List<Color> buttonTextColors = [
+      colorScheme.primary,
+      colorScheme.secondary,
+      colorScheme.tertiary,
+      colorScheme.error
+    ];
+    return buttonTextColors[stopwatchState];
+  }
+
   String getTimeString(Duration duration) {
     String minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
     String seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
@@ -52,13 +89,21 @@ class _HomePageState extends State<HomePage> {
     return "$minutes:$seconds.$milliseconds";
   }
 
+  String getTimeLimitString(int duration) {
+    String minutes = (duration / 60 % 60).floor().toString();
+    String seconds = (duration % 60).toString().padLeft(2, '0');
+    return "$minutes:$seconds";
+  }
+
   void changeStopwatchState() {
     setState(() {
       if (stopwatchState == 0) {
         stopwatch.start();
-        ticker.start();
         timeStrings = ["00:00.00", "00:00.00", "00:00.00"];
         stopwatchState = 1;
+        deckLimitExceeded = false;
+        routineLimitExceeded = false;
+        ticker.start();
         fontSizes = [68, 48, 48];
       } else if (stopwatchState == 1) {
         finalTimeValues[0] = stopwatch.elapsed;
@@ -69,54 +114,36 @@ class _HomePageState extends State<HomePage> {
         finalTimeValues[1] = stopwatch.elapsed - finalTimeValues[0];
         stopwatchState = 3;
         timeStrings[1] = getTimeString(finalTimeValues[1]);
+        if (finalTimeValues[1] > const Duration(seconds: 10)) {
+          deckLimitExceeded = true;
+        }
         fontSizes = [48, 48, 68];
       } else if (stopwatchState == 3) {
         stopwatch.stop();
         finalTimeValues[2] = stopwatch.elapsed - finalTimeValues[0];
         ticker.stop();
         timeStrings[2] = getTimeString(finalTimeValues[2]);
+        if (finalTimeValues[2] > Duration(seconds: timeLimit + 5) ||
+            finalTimeValues[2] < Duration(seconds: timeLimit - 5)) {
+          routineLimitExceeded = true;
+        }
         stopwatch.reset();
         stopwatchState = 0;
-        print(finalTimeValues);
       }
     });
-  }
-
-  String getButtonLabel() {
-    if (stopwatchState == 0) {
-      return "Start Walk Time";
-    } else if (stopwatchState == 1) {
-      return "Start Deck Time";
-    } else if (stopwatchState == 2) {
-      return "Start Routine Time";
-    } else if (stopwatchState == 3) {
-      return "Stop";
-    } else {
-      return "Error";
-    }
-  }
-
-  Color getButtonColor(ColorScheme colorScheme) {
-    if (stopwatchState == 0) {
-      return colorScheme.primaryContainer;
-    } else if (stopwatchState == 1) {
-      return colorScheme.tertiaryContainer;
-    } else if (stopwatchState == 2) {
-      return colorScheme.tertiaryContainer;
-    } else if (stopwatchState == 3) {
-      return colorScheme.errorContainer;
-    } else {
-      return colorScheme.errorContainer;
-    }
+    HapticFeedback.mediumImpact();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Synchrotimer",
-          style: Theme.of(context).textTheme.headlineMedium,
+        title: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Text(
+            "Synchrotimer",
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
         ),
       ),
       body: Padding(
@@ -127,61 +154,100 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    "Walk Time",
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
+                Text(
+                  "Walk Time",
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
                     fontSize: fontSizes[0],
-                    fontFeatures: <FontFeature>[
-                      const FontFeature.tabularFigures(),
-                    ],
+                    fontFeatures: [const FontFeature.tabularFigures()],
+                    fontVariations: const [FontVariation('wght', 300)],
                   ),
                   child: Text(timeStrings[0]),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
                   child: Text(
-                    "Deck Time",
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    "Deck Time < 0:10",
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
+                    color: deckLimitExceeded
+                        ? Theme.of(context).colorScheme.error
+                        : Theme.of(context).colorScheme.secondary,
                     fontSize: fontSizes[1],
-                    fontFeatures: <FontFeature>[
-                      const FontFeature.tabularFigures(),
-                    ],
+                    fontFeatures: [const FontFeature.tabularFigures()],
+                    fontVariations: const [FontVariation('wght', 300)],
                   ),
                   child: Text(timeStrings[1]),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.fromLTRB(0, 16, 0, 4),
                   child: Text(
-                    "Total Routine Time",
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    "Total Routine Time - ${getTimeLimitString(timeLimit)} ± 5",
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
+                    color: routineLimitExceeded
+                        ? Theme.of(context).colorScheme.error
+                        : Theme.of(context).colorScheme.tertiary,
                     fontSize: fontSizes[2],
-                    fontFeatures: <FontFeature>[
-                      const FontFeature.tabularFigures(),
-                    ],
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                    fontVariations: const [FontVariation('wght', 300)],
                   ),
                   child: Text(timeStrings[2]),
                 ),
               ],
             ),
             const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EventPage(),
+                  ),
+                ).then(
+                  (result) => {
+                    if (result != null)
+                      {
+                        setState(() {
+                          timeLimit = result[0];
+                          eventString = result[1];
+                        })
+                      }
+                  },
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(24)),
+                ),
+              ),
+              child: Text(
+                eventString,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 20,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 16),
             Expanded(
               flex: 2,
               child: ElevatedButton(
@@ -189,12 +255,15 @@ class _HomePageState extends State<HomePage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: getButtonColor(Theme.of(context).colorScheme),
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(32)),
+                    borderRadius: BorderRadius.all(Radius.circular(24)),
                   ),
                 ),
                 child: Text(
                   getButtonLabel(),
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  style: TextStyle(
+                    color: getButtonTextColor(Theme.of(context).colorScheme),
+                    fontSize: 28,
+                  ),
                 ),
               ),
             ),

@@ -22,7 +22,7 @@ class App extends StatelessWidget {
       title: 'synchrotimer',
       theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          colorSchemeSeed: Colors.lightBlue.shade800,
           brightness: Brightness.light,
           fontFamily: 'Plus Jakarta Sans'),
       home: const HomePage(),
