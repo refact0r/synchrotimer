@@ -5,8 +5,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:synchrotimer/pages/event.dart';
 
+import '../helpers/preferences.dart';
+import '../helpers/utils.dart';
 import 'history.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,7 +21,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<double> fontSizes = [68, 48, 48];
-  List<String> timeStrings = ["00:00.00", "00:00.00", "00:00.00"];
+  List<String> timeStrings = [timeString(Duration.zero), timeString(Duration.zero), timeString(Duration.zero)];
   List<Duration> finalTimes = [Duration.zero, Duration.zero, Duration.zero];
   // Duration elapsed = Duration.zero;
   int state = 0;
@@ -47,16 +50,24 @@ class _HomePageState extends State<HomePage> {
   });
   String eventString = "12 & Under Solo";
   int timeLimit = 120;
+  late SharedPreferences sharedPrefs;
+  late Preferences prefs;
 
   @override
   void initState() {
     super.initState();
+    loadPrefs();
   }
 
   @override
   void dispose() {
     ticker.dispose();
     super.dispose();
+  }
+
+  void loadPrefs() async {
+    sharedPrefs = await SharedPreferences.getInstance();
+    prefs = Preferences(sharedPrefs);
   }
 
   String getButtonLabel() {
@@ -79,24 +90,11 @@ class _HomePageState extends State<HomePage> {
     return buttonTextColors[state];
   }
 
-  String timeString(Duration duration) {
-    String min = (duration.inMinutes % 60).toString().padLeft(2, '0');
-    String sec = (duration.inSeconds % 60).toString().padLeft(2, '0');
-    String msec = (duration.inMilliseconds % 1000 / 10).floor().toString().padLeft(2, '0');
-    return "$min:$sec.$msec";
-  }
-
-  String getTimeLimitString(int duration) {
-    String min = (duration / 60 % 60).floor().toString();
-    String sec = (duration % 60).toString().padLeft(2, '0');
-    return "$min:$sec";
-  }
-
   void changeStopwatchState() {
     setState(() {
       if (state == 0) {
         stopwatch.start();
-        timeStrings = ["00:00.00", "00:00.00", "00:00.00"];
+        timeStrings = [timeString(Duration.zero), timeString(Duration.zero), timeString(Duration.zero)];
         state = 1;
         deckExceeded = false;
         routineExceeded = false;
@@ -125,6 +123,7 @@ class _HomePageState extends State<HomePage> {
         }
         stopwatch.reset();
         state = 0;
+        prefs.addHistory(timeStrings, eventString, deckExceeded, routineExceeded);
       }
     });
     HapticFeedback.mediumImpact();
@@ -142,6 +141,26 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         actions: <Widget>[
+          IconButton(
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              setState(() {
+                ticker.stop();
+                stopwatch.stop();
+                stopwatch.reset();
+                state = 0;
+                timeStrings = [timeString(Duration.zero), timeString(Duration.zero), timeString(Duration.zero)];
+                deckExceeded = false;
+                routineExceeded = false;
+                fontSizes = [68, 48, 48];
+              });
+            },
+            style: IconButton.styleFrom(
+              padding: const EdgeInsets.all(8),
+            ),
+            tooltip: "Reset",
+            icon: const Icon(Icons.restart_alt_rounded, size: 28),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 24),
             child: IconButton(
@@ -149,14 +168,14 @@ class _HomePageState extends State<HomePage> {
                 HapticFeedback.selectionClick();
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const HistoryPage()),
+                  MaterialPageRoute(builder: (context) => HistoryPage(prefs: prefs)),
                 );
               },
               style: IconButton.styleFrom(
                 padding: const EdgeInsets.all(8),
               ),
-              icon: const Icon(Icons.history),
-              iconSize: 32,
+              tooltip: "History",
+              icon: const Icon(Icons.history_rounded, size: 28),
             ),
           ),
         ],
@@ -205,7 +224,7 @@ class _HomePageState extends State<HomePage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 16, 0, 4),
                   child: Text(
-                    "Total Routine Time - ${getTimeLimitString(timeLimit)} ± 5",
+                    "Total Routine Time - ${timeStringShort(timeLimit)} ± 5",
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
