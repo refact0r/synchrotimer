@@ -1,11 +1,11 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:synchrotimer/helpers/utils.dart';
 
-class Preferences {
+class History {
   final SharedPreferences sharedPrefs;
   List<String> localHistory = [];
 
-  Preferences(this.sharedPrefs) {
+  History(this.sharedPrefs) {
     if (sharedPrefs.getStringList('history') == null) {
       sharedPrefs.setStringList('history', []);
     } else {
@@ -22,14 +22,14 @@ class Preferences {
     return history;
   }
 
-  void addHistory(List<String> timeStrings, String eventString, bool deckExceeded, bool walkExceeded) {
+  void add(List<String> timeStrings, String eventString, bool deckExceeded, bool walkExceeded) {
     List<String> strList = sharedPrefs.getStringList('history')!;
     strList.add('${timeStrings.join(',')},$eventString,$deckExceeded,$walkExceeded');
     localHistory = strList;
     sharedPrefs.setStringList('history', strList);
   }
 
-  void clearHistory() {
+  void clear() {
     sharedPrefs.setStringList('history', []);
     localHistory = [];
   }

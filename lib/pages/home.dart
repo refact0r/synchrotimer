@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'dart:developer';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -8,9 +7,10 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:synchrotimer/pages/event.dart';
 
-import '../helpers/preferences.dart';
+import '../helpers/history.dart';
 import '../helpers/utils.dart';
 import 'history.dart';
+import 'about.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,7 +20,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<double> fontSizes = [68, 48, 48];
+  List<double> fontSizes = [72, 56, 56];
   List<String> timeStrings = [timeString(Duration.zero), timeString(Duration.zero), timeString(Duration.zero)];
   List<Duration> finalTimes = [Duration.zero, Duration.zero, Duration.zero];
   // Duration elapsed = Duration.zero;
@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   String eventString = "12 & Under Solo";
   int timeLimit = 120;
   late SharedPreferences sharedPrefs;
-  late Preferences prefs;
+  late History history;
 
   @override
   void initState() {
@@ -67,7 +67,7 @@ class _HomePageState extends State<HomePage> {
 
   void loadPrefs() async {
     sharedPrefs = await SharedPreferences.getInstance();
-    prefs = Preferences(sharedPrefs);
+    history = History(sharedPrefs);
   }
 
   String getButtonLabel() {
@@ -99,12 +99,12 @@ class _HomePageState extends State<HomePage> {
         deckExceeded = false;
         routineExceeded = false;
         ticker.start();
-        fontSizes = [68, 48, 48];
+        fontSizes = [72, 56, 56];
       } else if (state == 1) {
         finalTimes[0] = stopwatch.elapsed;
         state = 2;
         timeStrings[0] = timeString(finalTimes[0]);
-        fontSizes = [48, 68, 48];
+        fontSizes = [56, 72, 56];
       } else if (state == 2) {
         finalTimes[1] = stopwatch.elapsed - finalTimes[0];
         state = 3;
@@ -112,7 +112,7 @@ class _HomePageState extends State<HomePage> {
         if (finalTimes[1] > const Duration(seconds: 10)) {
           deckExceeded = true;
         }
-        fontSizes = [48, 48, 68];
+        fontSizes = [56, 56, 72];
       } else if (state == 3) {
         stopwatch.stop();
         finalTimes[2] = stopwatch.elapsed - finalTimes[0];
@@ -123,7 +123,7 @@ class _HomePageState extends State<HomePage> {
         }
         stopwatch.reset();
         state = 0;
-        prefs.addHistory(timeStrings, eventString, deckExceeded, routineExceeded);
+        history.add(timeStrings, eventString, deckExceeded, routineExceeded);
       }
     });
     HapticFeedback.mediumImpact();
@@ -134,10 +134,10 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Padding(
-          padding: const EdgeInsets.only(left: 16),
+          padding: const EdgeInsets.only(left: 8),
           child: Text(
             "Synchrotimer",
-            style: Theme.of(context).textTheme.headlineMedium,
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
         actions: <Widget>[
@@ -152,7 +152,7 @@ class _HomePageState extends State<HomePage> {
                 timeStrings = [timeString(Duration.zero), timeString(Duration.zero), timeString(Duration.zero)];
                 deckExceeded = false;
                 routineExceeded = false;
-                fontSizes = [68, 48, 48];
+                fontSizes = [72, 56, 56];
               });
             },
             style: IconButton.styleFrom(
@@ -161,27 +161,41 @@ class _HomePageState extends State<HomePage> {
             tooltip: "Reset",
             icon: const Icon(Icons.restart_alt_rounded, size: 28),
           ),
+          IconButton(
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HistoryPage(prefs: history)),
+              );
+            },
+            style: IconButton.styleFrom(
+              padding: const EdgeInsets.all(8),
+            ),
+            tooltip: "History",
+            icon: const Icon(Icons.history_rounded, size: 28),
+          ),
           Padding(
-            padding: const EdgeInsets.only(right: 24),
+            padding: const EdgeInsets.only(right: 16),
             child: IconButton(
               onPressed: () {
                 HapticFeedback.selectionClick();
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => HistoryPage(prefs: prefs)),
+                  MaterialPageRoute(builder: (context) => const AboutPage()),
                 );
               },
               style: IconButton.styleFrom(
                 padding: const EdgeInsets.all(8),
               ),
-              tooltip: "History",
-              icon: const Icon(Icons.history_rounded, size: 28),
+              tooltip: "Info",
+              icon: const Icon(Icons.info_outline_rounded, size: 28),
             ),
           ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -222,7 +236,7 @@ class _HomePageState extends State<HomePage> {
                   child: Text(timeStrings[1]),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 16, 0, 4),
+                  padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
                   child: Text(
                     "Total Routine Time - ${timeStringShort(timeLimit)} ± 5",
                     style: Theme.of(context).textTheme.titleLarge,
@@ -241,7 +255,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
                 HapticFeedback.selectionClick();

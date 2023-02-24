@@ -3,11 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../helpers/preferences.dart';
-import '../helpers/utils.dart';
+import '../helpers/history.dart';
 
 class HistoryPage extends StatefulWidget {
-  final Preferences prefs;
+  final History prefs;
 
   const HistoryPage({Key? key, required this.prefs}) : super(key: key);
 
@@ -34,7 +33,7 @@ class _HistoryPageState extends State<HistoryPage> {
               onPressed: () {
                 HapticFeedback.selectionClick();
                 setState(() {
-                  widget.prefs.clearHistory();
+                  widget.prefs.clear();
                 });
               },
               style: IconButton.styleFrom(
