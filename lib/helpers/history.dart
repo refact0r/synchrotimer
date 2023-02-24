@@ -1,5 +1,4 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:synchrotimer/helpers/utils.dart';
 
 class History {
   final SharedPreferences sharedPrefs;

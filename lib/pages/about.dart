@@ -44,7 +44,6 @@ class _AboutPageState extends State<AboutPage> {
             Navigator.pop(context, null);
           },
         ),
-        actions: <Widget>[],
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(32, 8, 32, 32),
@@ -76,9 +75,9 @@ class _AboutPageState extends State<AboutPage> {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
-                  child: Text(
+                  child: const Text(
                     "Github",
-                    style: const TextStyle(fontSize: 20),
+                    style: TextStyle(fontSize: 20),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -89,9 +88,9 @@ class _AboutPageState extends State<AboutPage> {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
-                  child: Text(
+                  child: const Text(
                     "Privacy Policy",
-                    style: const TextStyle(fontSize: 20),
+                    style: TextStyle(fontSize: 20),
                   ),
                 )
               ],
