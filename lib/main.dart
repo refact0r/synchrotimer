@@ -25,6 +25,7 @@ class App extends StatelessWidget {
           colorSchemeSeed: Colors.lightBlue.shade800,
           brightness: Brightness.light,
           fontFamily: 'Plus Jakarta Sans'),
+      debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );
   }

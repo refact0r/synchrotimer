@@ -39,6 +39,8 @@ dependencies:
     provider: ^6.0.5
     package_info_plus: ^3.0.3
     url_launcher: ^6.1.10
+    flutter_launcher_icons: ^0.12.0
+    flutter_native_splash: ^2.2.18
 
 dev_dependencies:
     flutter_test:
@@ -98,3 +100,29 @@ flutter:
               - asset: assets/fonts/PlusJakartaSans-VariableFont_wght.ttf
               - asset: assets/fonts/PlusJakartaSans-Italic-VariableFont_wght.ttf
                 style: italic
+
+flutter_icons:
+    android: true
+    adaptive_icon_background: '#ffffff'
+    adaptive_icon_foreground: 'assets/icons/icon.png'
+    ios: true
+    remove_alpha_ios: true
+    image_path: 'assets/icons/icon.png'
+    min_sdk_android: 21
+    web:
+        generate: true
+        background_color: '#ffffff'
+        theme_color: '#hexcode'
+    windows:
+        generate: true
+        icon_size: 48 # min:48, max:256, default: 48
+    macos:
+        generate: true
+
+flutter_native_splash:
+    color: '#ffffff'
+    image: assets/icons/icon.png
+    android_12:
+        color: '#ffffff'
+        icon_background_color: '#ffffff'
+        image: assets/icons/icon.png
