@@ -35,12 +35,14 @@ class _HomePageState extends State<HomePage> {
       } else if (state == 1) {
         timeStrings[0] = timeString(stopwatch.elapsed);
       } else if (state == 2) {
+        timeStrings[0] = timeString(stopwatch.elapsed);
+      } else if (state == 3) {
         timeStrings[1] = timeString(stopwatch.elapsed - finalTimes[0]);
         timeStrings[2] = timeString(stopwatch.elapsed - finalTimes[0]);
-      } else if (state == 3) {
+      } else if (state == 4) {
         timeStrings[2] = timeString(stopwatch.elapsed - finalTimes[0]);
       }
-      if (state == 2 && (stopwatch.elapsed - finalTimes[0]) > const Duration(seconds: 10)) {
+      if (state == 3 && (stopwatch.elapsed - finalTimes[0]) > const Duration(seconds: 10)) {
         deckExceeded = true;
       }
       if ((stopwatch.elapsed - finalTimes[0]) > Duration(seconds: timeLimit + 5)) {
@@ -71,13 +73,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   String getButtonLabel() {
-    final List<String> buttonLabels = ["Start Walk Time", "Start Deck Time", "Start Routine Time", "Stop"];
+    final List<String> buttonLabels = [
+      "Start Walk Time",
+      "Stop Walk Time",
+      "Start Deck Time",
+      "Start Routine Time",
+      "Stop"
+    ];
     return buttonLabels[state];
   }
 
   Color getButtonColor(ColorScheme colors) {
     final List<Color> buttonColors = [
       colors.primaryContainer,
+      colors.errorContainer,
       colors.secondaryContainer,
       colors.tertiaryContainer,
       colors.errorContainer
@@ -86,7 +95,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   Color getButtonTextColor(ColorScheme colors) {
-    final List<Color> buttonTextColors = [colors.primary, colors.secondary, colors.tertiary, colors.error];
+    final List<Color> buttonTextColors = [
+      colors.primary,
+      colors.error,
+      colors.secondary,
+      colors.tertiary,
+      colors.error
+    ];
     return buttonTextColors[state];
   }
 
@@ -101,19 +116,23 @@ class _HomePageState extends State<HomePage> {
         ticker.start();
         fontSizes = [72, 56, 56];
       } else if (state == 1) {
+        stopwatch.stop();
         finalTimes[0] = stopwatch.elapsed;
         state = 2;
         timeStrings[0] = timeString(finalTimes[0]);
-        fontSizes = [56, 72, 56];
       } else if (state == 2) {
-        finalTimes[1] = stopwatch.elapsed - finalTimes[0];
+        stopwatch.start();
         state = 3;
+        fontSizes = [56, 72, 56];
+      } else if (state == 3) {
+        finalTimes[1] = stopwatch.elapsed - finalTimes[0];
+        state = 4;
         timeStrings[1] = timeString(finalTimes[1]);
         if (finalTimes[1] > const Duration(seconds: 10)) {
           deckExceeded = true;
         }
         fontSizes = [56, 56, 72];
-      } else if (state == 3) {
+      } else if (state == 4) {
         stopwatch.stop();
         finalTimes[2] = stopwatch.elapsed - finalTimes[0];
         ticker.stop();
