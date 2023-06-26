@@ -4,16 +4,16 @@ import 'package:flutter/services.dart';
 import '../helpers/info.dart';
 import '../helpers/utils.dart';
 
-class EventPage extends StatefulWidget {
-  final int groupIndex;
+class GroupPage extends StatefulWidget {
+  final int eventIndex;
 
-  const EventPage({Key? key, required this.groupIndex}) : super(key: key);
+  const GroupPage({Key? key, required this.eventIndex}) : super(key: key);
 
   @override
-  State<EventPage> createState() => _EventPageState();
+  State<GroupPage> createState() => _GroupPageState();
 }
 
-class _EventPageState extends State<EventPage> {
+class _GroupPageState extends State<GroupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,7 +26,7 @@ class _EventPageState extends State<EventPage> {
             });
           },
         ),
-        title: const Text('Select Event'),
+        title: const Text('Select Group'),
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
@@ -35,16 +35,16 @@ class _EventPageState extends State<EventPage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
               child: Text(
-                groupNames[widget.groupIndex],
+                eventNames[widget.eventIndex],
                 style: const TextStyle(fontSize: 20),
               ),
             ),
-            for (int i = 0; i < eventNames.length; i++)
-              if (timeLimits[i][widget.groupIndex] != 0)
+            for (int i = 0; i < groupNames.length; i++)
+              if (timeLimits[widget.eventIndex][i] != 0)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: ElevatedButton(
-                    key: ValueKey(eventNames[i]),
+                    key: ValueKey(groupNames[i]),
                     onPressed: () {
                       HapticFeedback.selectionClick();
                       Navigator.pop(context, i);
@@ -59,14 +59,14 @@ class _EventPageState extends State<EventPage> {
                     child: Row(
                       children: [
                         Text(
-                          eventNames[i],
+                          groupNames[i],
                           style: const TextStyle(
                             fontSize: 20,
                           ),
                         ),
                         const Spacer(),
                         Text(
-                          timeStringShort(timeLimits[i][widget.groupIndex]),
+                          timeStringShort(timeLimits[widget.eventIndex][i]),
                           style: const TextStyle(
                             fontSize: 20,
                           ),

@@ -32,9 +32,7 @@ class _HistoryPageState extends State<HistoryPage> {
             child: IconButton(
               onPressed: () {
                 HapticFeedback.selectionClick();
-                setState(() {
-                  widget.prefs.clear();
-                });
+                _showDialog();
               },
               style: IconButton.styleFrom(
                 padding: const EdgeInsets.all(8),
@@ -101,6 +99,40 @@ class _HistoryPageState extends State<HistoryPage> {
             ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showDialog() async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+          content: const Text(
+            'Clear history?',
+            style: TextStyle(fontSize: 20),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Confirm'),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                setState(() {
+                  widget.prefs.clear();
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

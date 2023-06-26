@@ -8,7 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:synchrotimer/pages/event.dart';
 
 import '../helpers/history.dart';
+import '../helpers/info.dart';
 import '../helpers/utils.dart';
+import 'group.dart';
 import 'history.dart';
 import 'about.dart';
 
@@ -50,7 +52,10 @@ class _HomePageState extends State<HomePage> {
       }
     });
   });
-  String eventString = "12 & Under Solo";
+  int groupIndex = 3;
+  int eventIndex = 0;
+  String groupString = "12 & Under";
+  String eventString = "Solo";
   int timeLimit = 120;
   late SharedPreferences sharedPrefs;
   late History history;
@@ -142,7 +147,7 @@ class _HomePageState extends State<HomePage> {
         }
         stopwatch.reset();
         state = 0;
-        history.add(timeStrings, eventString, deckExceeded, routineExceeded);
+        history.add(timeStrings, "$groupString $eventString", deckExceeded, routineExceeded);
       }
     });
     HapticFeedback.mediumImpact();
@@ -225,7 +230,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Text(
                   "Walk Time",
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 20),
                 ),
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
@@ -241,7 +246,7 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
                   child: Text(
                     "Deck Time < 0:10",
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 20),
                   ),
                 ),
                 AnimatedDefaultTextStyle(
@@ -258,7 +263,7 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
                   child: Text(
                     "Total Routine Time - ${timeStringShort(timeLimit)} ± 5",
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 20),
                   ),
                 ),
                 AnimatedDefaultTextStyle(
@@ -275,41 +280,92 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                HapticFeedback.selectionClick();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const EventPage(),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      HapticFeedback.selectionClick();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GroupPage(eventIndex: eventIndex),
+                        ),
+                      ).then(
+                        (result) => {
+                          if (result != null)
+                            {
+                              setState(() {
+                                timeLimit = timeLimits[eventIndex][result];
+                                groupIndex = result;
+                                groupString = groupNames[result];
+                              })
+                            }
+                        },
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+                      backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(24)),
+                      ),
+                    ),
+                    child: Text(
+                      groupString,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 20,
+                      ),
+                      textAlign: TextAlign.center,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ).then(
-                  (result) => {
-                    if (result != null)
-                      {
-                        setState(() {
-                          timeLimit = result[0];
-                          eventString = result[1];
-                        })
-                      }
-                  },
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(24)),
                 ),
-              ),
-              child: Text(
-                eventString,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontSize: 20,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      HapticFeedback.selectionClick();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EventPage(groupIndex: groupIndex),
+                        ),
+                      ).then(
+                        (result) => {
+                          if (result != null)
+                            {
+                              setState(() {
+                                timeLimit = timeLimits[result][groupIndex];
+                                eventIndex = result;
+                                eventString = eventNames[result];
+                              })
+                            }
+                        },
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+                      backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(24)),
+                      ),
+                    ),
+                    child: Text(
+                      eventString,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 20,
+                      ),
+                      textAlign: TextAlign.center,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
+              ],
             ),
             const SizedBox(height: 16),
             Expanded(
