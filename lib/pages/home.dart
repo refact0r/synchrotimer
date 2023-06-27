@@ -13,6 +13,7 @@ import '../helpers/utils.dart';
 import 'group.dart';
 import 'history.dart';
 import 'about.dart';
+import 'drawer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -157,12 +158,20 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Padding(
-          padding: const EdgeInsets.only(left: 8),
-          child: Text(
-            "Synchrotimer",
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+        title: Text(
+          "Synchrotimer",
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
         ),
         actions: <Widget>[
           IconButton(
@@ -185,20 +194,6 @@ class _HomePageState extends State<HomePage> {
             tooltip: "Reset",
             icon: const Icon(Icons.restart_alt_rounded, size: 28),
           ),
-          IconButton(
-            onPressed: () {
-              HapticFeedback.selectionClick();
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => HistoryPage(prefs: history)),
-              );
-            },
-            style: IconButton.styleFrom(
-              padding: const EdgeInsets.all(8),
-            ),
-            tooltip: "History",
-            icon: const Icon(Icons.history_rounded, size: 28),
-          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: IconButton(
@@ -206,17 +201,22 @@ class _HomePageState extends State<HomePage> {
                 HapticFeedback.selectionClick();
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AboutPage()),
+                  MaterialPageRoute(
+                    builder: (context) => HistoryPage(prefs: history),
+                  ),
                 );
               },
               style: IconButton.styleFrom(
                 padding: const EdgeInsets.all(8),
               ),
-              tooltip: "Info",
-              icon: const Icon(Icons.info_outline_rounded, size: 28),
+              tooltip: "History",
+              icon: const Icon(Icons.history_rounded, size: 28),
             ),
           ),
         ],
+      ),
+      drawer: const Drawer(
+        child: NavigationDrawerWidget(selected: 0),
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),

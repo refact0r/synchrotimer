@@ -117,7 +117,7 @@ class _HistoryPageState extends State<HistoryPage> {
               child: const Text('Cancel'),
               onPressed: () {
                 HapticFeedback.selectionClick();
-                Navigator.of(context).pop();
+                Navigator.pop(context);
               },
             ),
             TextButton(
@@ -127,7 +127,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 setState(() {
                   widget.prefs.clear();
                 });
-                Navigator.of(context).pop();
+                Navigator.pop(context);
               },
             ),
           ],

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'drawer.dart';
+
 class AboutPage extends StatefulWidget {
   const AboutPage({Key? key}) : super(key: key);
 
@@ -38,13 +40,19 @@ class _AboutPageState extends State<AboutPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('About'),
-        leading: BackButton(
-          onPressed: () {
-            HapticFeedback.selectionClick();
-            Navigator.pop(context, null);
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Scaffold.of(context).openDrawer();
+              },
+            );
           },
         ),
       ),
+      drawer: const NavigationDrawerWidget(selected: 2),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(32, 8, 32, 32),
         child: Column(
