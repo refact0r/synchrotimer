@@ -12,7 +12,6 @@ import '../helpers/info.dart';
 import '../helpers/utils.dart';
 import 'group.dart';
 import 'history.dart';
-import 'about.dart';
 import 'drawer.dart';
 
 class HomePage extends StatefulWidget {
@@ -192,7 +191,7 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(8),
             ),
             tooltip: "Reset",
-            icon: const Icon(Icons.restart_alt_rounded, size: 28),
+            icon: const Icon(Icons.refresh, size: 28),
           ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -210,7 +209,7 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.all(8),
               ),
               tooltip: "History",
-              icon: const Icon(Icons.history_rounded, size: 28),
+              icon: const Icon(Icons.history, size: 28),
             ),
           ),
         ],

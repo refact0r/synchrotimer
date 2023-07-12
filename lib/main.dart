@@ -21,10 +21,11 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'synchrotimer',
       theme: ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: Colors.lightBlue.shade800,
-          brightness: Brightness.light,
-          fontFamily: 'Plus Jakarta Sans'),
+        useMaterial3: true,
+        colorSchemeSeed: Colors.lightBlue.shade800,
+        brightness: Brightness.light,
+        fontFamily: 'Plus Jakarta Sans',
+      ),
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:synchrotimer/pages/home.dart';
 
 import 'about.dart';
+import 'hybrids.dart';
 
 class NavigationDrawerWidget extends StatelessWidget {
   const NavigationDrawerWidget({Key? key, required this.selected}) : super(key: key);
@@ -11,7 +12,7 @@ class NavigationDrawerWidget extends StatelessWidget {
 
   final List<Widget> pages = const [
     HomePage(),
-    AboutPage(),
+    HybridsPage(),
     AboutPage(),
   ];
 
@@ -45,8 +46,8 @@ class NavigationDrawerWidget extends StatelessWidget {
           ),
         ),
         NavigationDrawerDestination(
-          icon: const Icon(Icons.list_alt_outlined),
-          selectedIcon: const Icon(Icons.list_alt),
+          icon: const Icon(Icons.view_timeline_outlined),
+          selectedIcon: const Icon(Icons.view_timeline),
           label: Text(
             "Hybrids Timer",
             style: Theme.of(context).textTheme.titleMedium!.copyWith(fontSize: 18),
